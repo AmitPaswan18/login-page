@@ -1,11 +1,9 @@
 import "./App.css";
 
+import LoginForm from "./components/Loginpage";
+
 function App() {
-  return (
-    <>
-      <div>login page</div>
-    </>
-  );
+  return <LoginForm />;
 }
 
 export default App;
