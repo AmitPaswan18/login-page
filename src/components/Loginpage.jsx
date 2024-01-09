@@ -13,7 +13,6 @@ import InputAdornment from "@mui/material/InputAdornment";
 import FormControl from "@mui/material/FormControl";
 
 import AccountCircle from "@mui/icons-material/AccountCircle";
-
 import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -61,13 +60,13 @@ export default function LoginForm() {
         <img src={bgimage} className="h-[100vh]" />
       </div>
 
-      <div className="md:w-[40%] w-full h-[100vh] flex justify-center items-center bg-gradient-to-r from-[#CFCCCC] to-slate-[#E6D2CD]">
+      <div className="md:w-[40%] w-full h-[100vh] flex justify-center items-center bg-gradient-to-r from-[#D2CACF] to-slate-[#ECD7D5]">
         <ThemeProvider theme={defaultTheme}>
           <Container component="main" maxWidth="xs">
             <CssBaseline />
 
             <Box
-              className="shadow-lg shadow-slate-700 border-cyan-800 border p-3 bg-white rounded-lg h-[90%]"
+              className="shadow-lg shadow-slate-700 w-full border-cyan-800 md:border border-0 p-3 bg-white rounded-lg md:h-[90%] h-full"
               sx={{
                 display: "flex",
                 flexDirection: "column",
