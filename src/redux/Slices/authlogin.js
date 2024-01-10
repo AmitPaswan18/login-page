@@ -13,10 +13,10 @@ const authlogin = createSlice({
     signinsucces(state, action) {
       state.isLoginAuthenticated = true;
       state.user = action.payload;
-      state.isLoginAuthenticated = true;
     },
     signinFail(state, action) {
       state.error = action.payload;
+      state.isLoginAuthenticated = false;
     },
   },
 });

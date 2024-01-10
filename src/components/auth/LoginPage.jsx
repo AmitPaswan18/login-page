@@ -5,7 +5,7 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import { Avatar } from "@mui/material";
 import { useState } from "react";
-import bgimage from "../assets/images/bgimage.webp";
+import bgimage from "../assets/bgimage.webp";
 
 import Input from "@mui/material/Input";
 import InputLabel from "@mui/material/InputLabel";
@@ -24,13 +24,23 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-import { signinsucces } from "../redux/Slices/authlogin";
-import { useDispatch } from "react-redux";
+import { signinsucces, signinFail } from "../../redux/Slices/authlogin";
+import { useDispatch, useSelector } from "react-redux";
+import { instance } from "../../utils/axiosInstance";
+
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const defaultTheme = createTheme();
 
 export default function LoginForm() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const isLoginAuthenticated = useSelector(
+    (state) => state.auth.isLoginAuthenticated
+  );
+
+  console.log(isLoginAuthenticated);
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -47,12 +57,29 @@ export default function LoginForm() {
       password: data.get("password"),
     };
 
-    if (formData) {
-      dispatch(signinsucces(formData));
-    }
-
-    console.log(formData);
+    instance
+      .post("/user/userLogin", {
+        email: formData.username,
+        password: formData.password,
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          dispatch(signinsucces(response.data));
+        } else {
+          dispatch(signinFail(response.data));
+        }
+        console.log(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
+
+  useEffect(() => {
+    if (isLoginAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isLoginAuthenticated, navigate]);
 
   return (
     <div className="w-full h-full flex justify-center">
@@ -116,6 +143,7 @@ export default function LoginForm() {
                     </InputLabel>
                     <Input
                       id="standard-adornment-password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
                       endAdornment={
                         <InputAdornment position="end">
