@@ -4,7 +4,6 @@ import LoginForm from "./components/auth/LoginPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 
 import { Route, Routes, BrowserRouter as Router } from "react-router-dom";
-
 import "./index.css";
 
 function App() {

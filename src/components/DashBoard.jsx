@@ -11,22 +11,30 @@ import Typography from "@mui/material/Typography";
 
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-
-// import TextField from "@mui/material/TextField";
+import LightbulbCircleIcon from "@mui/icons-material/LightbulbCircle";
 
 import { TextareaAutosize as BaseTextareaAutosize } from "@mui/base/TextareaAutosize";
 import { styled } from "@mui/system";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { instance } from "../utils/axiosInstance";
 import GetTweet from "./GetTweet";
+import { startCorn, stopCorn } from "../redux/Slices/tweetSlice";
+import { useDispatch, useSelector } from "react-redux";
+
 const defaultTheme = createTheme();
 
 export default function Navbar() {
+  const dispatch = useDispatch();
+
   const [showtweet, setShowTweet] = useState(false);
+  const isIdle = useSelector((state) => state.tweet.isIdle);
+  console.log(isIdle);
+
   const [formData, setFormData] = useState({
     text: "",
   });
-  const handleClickShowPassword = () => setShowTweet((show) => !show);
+
+  const handleClickShowAddTweet = () => setShowTweet((show) => !show);
 
   const handleMouseDown = (event) => {
     event.preventDefault();
@@ -67,6 +75,25 @@ export default function Navbar() {
         console.log(error);
       });
   };
+
+  const handlestartCorn = () => {
+    instance.get("/tweetcron/startcron").then((response) => {
+      console.log(response);
+      if (response.status == 200) {
+        dispatch(startCorn(response.status));
+      }
+    });
+  };
+  const handlestopCorn = () => {
+    instance.get("/tweetcron/stopcron").then((response) => {
+      console.log(response);
+      if (response.status == 200) {
+        dispatch(startCorn(response.status));
+      }
+    });
+  };
+
+  useEffect(() => {}, []);
 
   const Textarea = styled(BaseTextareaAutosize)(
     ({ theme }) => `
@@ -125,14 +152,26 @@ export default function Navbar() {
 
   return (
     <div>
-      <div className="flex">
+      <div className="flex justify-center md:justify-between md:mt-10 mt-4 gap-10 md:gap-0 mx-10">
         <Button
-          onClick={handleClickShowPassword}
+          className="h-10 md:h-full w-fit"
+          onClick={handleClickShowAddTweet}
           onMouseDown={handleMouseDown}
-          sx={{ marginTop: "40px", marginLeft: "40px" }}
           variant="contained">
-          Add tweet
+          Add Tweet
         </Button>
+        <div className="flex h-10">
+          <Button variant="contained" onClick={handlestartCorn}>
+            Upload
+          </Button>
+          <LightbulbCircleIcon
+            sx={{ fontSize: "30px", backgroundColor: "white", color: "red" }}
+            className="mt-1 mr-10 "
+          />
+          <Button onClick={handlestopCorn} variant="contained">
+            Stop
+          </Button>
+        </div>
       </div>
 
       {showtweet ? (
@@ -141,13 +180,7 @@ export default function Navbar() {
             <Container component="main" maxWidth="xs">
               <CssBaseline />
 
-              <Box
-                className="shadow-lg shadow-slate-700 w-full border-cyan-800 md:border border-0 p-3 bg-white rounded-lg md:h-[90%] h-full"
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}>
+              <Box className="shadow-lg shadow-slate-700 w-full flex flex-col items-center border-cyan-800 md:border border-0 p-3 bg-white rounded-lg md:h-[90%] h-full">
                 <Box
                   component="form"
                   onSubmit={handleSubmit}
@@ -183,10 +216,10 @@ export default function Navbar() {
                   <Button
                     type="submit"
                     fullWidth
-                    className="bg-cyan-500"
+                    className="bg-cyan-500 opacity-90"
                     variant="contained"
                     sx={{ mt: 3, mb: 2, width: "100%" }}>
-                    Submit Tweet
+                    Post
                   </Button>
                   <Grid
                     container

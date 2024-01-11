@@ -3,6 +3,9 @@ import { createSlice } from "@reduxjs/toolkit";
 export const initialState = {
   tweet: [],
   error: null,
+  isEditable: false,
+  editableTweetId: null,
+  isIdle: false, // Rename startCorn and stopCorn state variable
 };
 
 const tweetAction = createSlice({
@@ -11,10 +14,39 @@ const tweetAction = createSlice({
   reducers: {
     getTweet(state, action) {
       state.tweet = action.payload;
+      state.isEditable = false;
+      state.editableTweetId = null;
+    },
+    deleteTweet(state, action) {
+      state.tweet = action.payload;
+      state.isEditable = false;
+      state.editableTweetId = null;
+    },
+    updateTweet(state, action) {
+      state.tweet = action.payload;
+      state.isEditable = false;
+      state.editableTweetId = null;
+    },
+    setEditable(state, action) {
+      state.isEditable = true;
+      state.editableTweetId = action.payload;
+    },
+    startCorn(state, action) {
+      state.isIdle = action.payload;
+    },
+    stopCorn(state, action) {
+      state.isIdle = false;
     },
   },
 });
 
-export const { getTweet } = tweetAction.actions;
+export const {
+  getTweet,
+  deleteTweet,
+  updateTweet,
+  setEditable,
+  startCorn,
+  stopCorn,
+} = tweetAction.actions;
 
 export default tweetAction.reducer;
