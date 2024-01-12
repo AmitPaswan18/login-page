@@ -40,7 +40,6 @@ export default function LoginForm() {
     (state) => state.auth.isLoginAuthenticated
   );
 
-  console.log(isLoginAuthenticated);
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -68,7 +67,6 @@ export default function LoginForm() {
         } else {
           dispatch(signinFail(response.data));
         }
-        console.log(response);
       })
       .catch((error) => {
         console.log(error);

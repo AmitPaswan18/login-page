@@ -1,9 +1,9 @@
-import NavBar from "../components/DashBoard";
+import DashBoard from "../components/DashBoard";
 
 const HomePage = () => {
   return (
     <div>
-      <NavBar />
+      <DashBoard />
     </div>
   );
 };

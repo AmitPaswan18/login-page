@@ -11,27 +11,26 @@ import Typography from "@mui/material/Typography";
 
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import LightbulbCircleIcon from "@mui/icons-material/LightbulbCircle";
 
 import { TextareaAutosize as BaseTextareaAutosize } from "@mui/base/TextareaAutosize";
 import { styled } from "@mui/system";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { instance } from "../utils/axiosInstance";
 import GetTweet from "./GetTweet";
-import { startCorn, stopCorn } from "../redux/Slices/tweetSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { startCorn } from "../redux/Slices/tweetSlice";
+import { useDispatch } from "react-redux";
+import InputFileUpload from "./Common/FileUpload";
 
 const defaultTheme = createTheme();
 
-export default function Navbar() {
+export default function DashBoard() {
   const dispatch = useDispatch();
 
   const [showtweet, setShowTweet] = useState(false);
-  const isIdle = useSelector((state) => state.tweet.isIdle);
-  console.log(isIdle);
 
   const [formData, setFormData] = useState({
     text: "",
+    tweetImage: "",
   });
 
   const handleClickShowAddTweet = () => setShowTweet((show) => !show);
@@ -46,6 +45,10 @@ export default function Navbar() {
       handleSubmit(e);
     }
   };
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    console.log(file);
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -56,19 +59,18 @@ export default function Navbar() {
     }
 
     const data = new FormData(form);
-    const formData = {
-      text: data.get("text"),
-    };
+    const fileInput = form.querySelector('input[type="file"]');
 
-    console.log(formData);
+    if (fileInput) {
+      const file = fileInput.files[0];
+      data.append("tweetImage", file);
+    }
 
     instance
-      .post("/tweet/createtweet", {
-        text: formData.text,
-      })
+      .post("/tweet/createtweet", data)
       .then((response) => {
         console.log(response);
-        setFormData({ text: "" });
+        setFormData({ text: "", tweetImage: "" });
         setShowTweet(false);
       })
       .catch((error) => {
@@ -92,8 +94,6 @@ export default function Navbar() {
       }
     });
   };
-
-  useEffect(() => {}, []);
 
   const Textarea = styled(BaseTextareaAutosize)(
     ({ theme }) => `
@@ -152,25 +152,33 @@ export default function Navbar() {
 
   return (
     <div>
-      <div className="flex justify-center md:justify-between md:mt-10 mt-4 gap-10 md:gap-0 mx-10">
-        <Button
-          className="h-10 md:h-full w-fit"
-          onClick={handleClickShowAddTweet}
-          onMouseDown={handleMouseDown}
-          variant="contained">
-          Add Tweet
-        </Button>
-        <div className="flex h-10">
-          <Button variant="contained" onClick={handlestartCorn}>
-            Upload
-          </Button>
-          <LightbulbCircleIcon
-            sx={{ fontSize: "30px", backgroundColor: "white", color: "red" }}
-            className="mt-1 mr-10 "
-          />
-          <Button onClick={handlestopCorn} variant="contained">
-            Stop
-          </Button>
+      <div className="flex justify-start">
+        <div className="flex h-fit md:h-full md:flex-row md:w-full w-[40%] flex-col justify-center md:justify-between md:mt-10 mt-2 gap-2 px-5">
+          <div className="flex md:h-10 h-fit md:flex-row flex-col">
+            <Button
+              className="h-10 md:h-full md:w-full  w-[50%]  "
+              onClick={handleClickShowAddTweet}
+              onMouseDown={handleMouseDown}
+              variant="contained">
+              Add Tweet
+            </Button>
+          </div>
+          <div className="flex md:h-10 h-fit justify-start gap-2  md:flex-row flex-col">
+            <div>
+              <Button
+                className="h-10 md:h-full md:w-full w-[50%] "
+                variant="contained"
+                onClick={handlestartCorn}>
+                Upload
+              </Button>
+            </div>
+            <Button
+              className="h-10 md:h-full md:w-full w-[50%] "
+              onClick={handlestopCorn}
+              variant="contained">
+              Stop
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -211,6 +219,13 @@ export default function Navbar() {
                         placeholder="What is happening!?"
                         sx={{ marginTop: 1, width: "100%" }}
                       />
+                      <div className="flex justify-center mt-2 w-full">
+                        <InputFileUpload
+                          id="tweetImage"
+                          onChange={handleFileChange}
+                          name="tweetImage"
+                        />
+                      </div>
                     </FormControl>
                   </div>
                   <Button

@@ -1,11 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
-
 export const initialState = {
   tweet: [],
   error: null,
+  loading: true,
   isEditable: false,
   editableTweetId: null,
-  isIdle: false, // Rename startCorn and stopCorn state variable
+  isIdle: false,
 };
 
 const tweetAction = createSlice({
