@@ -1,37 +1,35 @@
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
+import {
+  Button,
+  InputLabel,
+  Grid,
+  Box,
+  CssBaseline,
+  FormControl,
+  Typography,
+  Container,
+} from "@mui/material";
 
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
-
-import InputLabel from "@mui/material/InputLabel";
-
-import FormControl from "@mui/material/FormControl";
-import Typography from "@mui/material/Typography";
-
-import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import LightbulbCircleIcon from "@mui/icons-material/LightbulbCircle";
 
 import { TextareaAutosize as BaseTextareaAutosize } from "@mui/base/TextareaAutosize";
 import { styled } from "@mui/system";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { instance } from "../utils/axiosInstance";
 import GetTweet from "./GetTweet";
-import { startCorn, stopCorn } from "../redux/Slices/tweetSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { startCorn } from "../redux/Slices/tweetSlice";
+import { useDispatch } from "react-redux";
+import InputFileUpload from "./Common/FileUpload";
 
 const defaultTheme = createTheme();
 
-export default function Navbar() {
+export default function DashBoard() {
   const dispatch = useDispatch();
 
-  const [showtweet, setShowTweet] = useState(false);
-  const isIdle = useSelector((state) => state.tweet.isIdle);
-  console.log(isIdle);
+  const [showTweet, setShowTweet] = useState(false);
 
   const [formData, setFormData] = useState({
     text: "",
+    tweetImage: "",
   });
 
   const handleClickShowAddTweet = () => setShowTweet((show) => !show);
@@ -47,33 +45,37 @@ export default function Navbar() {
     }
   };
 
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    console.log(file);
+  };
+
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    const form = event.target.closest("form");
-    if (!form) {
-      console.error("Form element not found");
-      return;
-    }
+    try {
+      event.preventDefault();
+      const form = event.target.closest("form");
+      if (!form) {
+        throw new Error("Form element not found");
+      }
+      const data = new FormData(form);
+      const fileInput = form.querySelector('input[type="file"]');
 
-    const data = new FormData(form);
-    const formData = {
-      text: data.get("text"),
-    };
+      if (fileInput) {
+        const file = fileInput.files[0];
+        data.append("tweetImage", file);
+      }
 
-    console.log(formData);
+      const response = await instance.post("/tweet/createtweet", data);
 
-    instance
-      .post("/tweet/createtweet", {
-        text: formData.text,
-      })
-      .then((response) => {
-        console.log(response);
-        setFormData({ text: "" });
+      if (response.status === 200) {
+        setFormData({ text: "", tweetImage: "" });
         setShowTweet(false);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      } else {
+        throw new Error(`Unexpected response status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error submitting the tweet:", error.message);
+    }
   };
 
   const handlestartCorn = () => {
@@ -84,6 +86,7 @@ export default function Navbar() {
       }
     });
   };
+
   const handlestopCorn = () => {
     instance.get("/tweetcron/stopcron").then((response) => {
       console.log(response);
@@ -92,8 +95,6 @@ export default function Navbar() {
       }
     });
   };
-
-  useEffect(() => {}, []);
 
   const Textarea = styled(BaseTextareaAutosize)(
     ({ theme }) => `
@@ -126,7 +127,10 @@ export default function Navbar() {
     &:focus-visible {
       outline: 0;
     }
-  `
+    
+  
+  `,
+    { readOnly: false }
   );
   const blue = {
     100: "#DAECFF",
@@ -152,34 +156,73 @@ export default function Navbar() {
 
   return (
     <div>
-      <div className="flex justify-center md:justify-between md:mt-10 mt-4 gap-10 md:gap-0 mx-10">
-        <Button
-          className="h-10 md:h-full w-fit"
-          onClick={handleClickShowAddTweet}
-          onMouseDown={handleMouseDown}
-          variant="contained">
-          Add Tweet
-        </Button>
-        <div className="flex h-10">
-          <Button variant="contained" onClick={handlestartCorn}>
-            Upload
-          </Button>
-          <LightbulbCircleIcon
-            sx={{ fontSize: "30px", backgroundColor: "white", color: "red" }}
-            className="mt-1 mr-10 "
-          />
-          <Button onClick={handlestopCorn} variant="contained">
-            Stop
-          </Button>
+      <div className="flex">
+        <div className="flex h-fit md:h-full md:flex-row md:w-full  mt-2 gap-2 px-5">
+          <div className="flex md:h-10 h-fit md:flex-row justify-evenly gap-2 ">
+            <Button
+              sx={{
+                "@media (max-width: 740px)": {
+                  fontSize: "8px",
+                },
+              }}
+              onClick={handleClickShowAddTweet}
+              onMouseDown={handleMouseDown}
+              variant="contained">
+              Add Tweet
+            </Button>
+            <Button
+              sx={{
+                position: "fixed",
+                right: "20px",
+                "@media (max-width: 740px)": {
+                  display: "flex",
+                  fontSize: "8px",
+                },
+              }}
+              variant="contained"
+              onClick={handlestartCorn}>
+              Upload
+            </Button>
+            <Button
+              sx={{
+                position: "fixed",
+                right: "120px",
+                "@media (max-width: 740px)": {
+                  display: "flex",
+                  right: "90px",
+                  fontSize: "8px",
+                },
+              }}
+              onClick={handlestopCorn}
+              variant="contained">
+              Stop
+            </Button>
+          </div>
         </div>
       </div>
+      <Typography
+        sx={{
+          display: "flex",
+          height: "fit",
+          justifyContent: "center",
+          fontFamily: "Poppins",
+          marginTop: "5px",
+          fontSize: "26px",
+          lineHeight: "1",
+          "@media (max-width: 740px)": {
+            fontSize: "16px",
+          },
+        }}
+        variant="h6"
+        component="div">
+        Recent Tweets
+      </Typography>
 
-      {showtweet ? (
+      {showTweet ? (
         <div className="md:w-[100%] w-full h-[86vh] flex justify-center items-center">
           <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="xs">
               <CssBaseline />
-
               <Box className="shadow-lg shadow-slate-700 w-full flex flex-col items-center border-cyan-800 md:border border-0 p-3 bg-white rounded-lg md:h-[90%] h-full">
                 <Box
                   component="form"
@@ -211,6 +254,13 @@ export default function Navbar() {
                         placeholder="What is happening!?"
                         sx={{ marginTop: 1, width: "100%" }}
                       />
+                      <div className="flex justify-center mt-2 w-full">
+                        <InputFileUpload
+                          id="tweetImage"
+                          onChange={handleFileChange}
+                          name="tweetImage"
+                        />
+                      </div>
                     </FormControl>
                   </div>
                   <Button
