@@ -19,13 +19,10 @@ import GetTweet from "./GetTweet";
 import { startCorn } from "../redux/Slices/tweetSlice";
 import { useDispatch } from "react-redux";
 import InputFileUpload from "./Common/FileUpload";
-import { startCorn } from "../redux/Slices/tweetSlice";
-import { useDispatch } from "react-redux";
-import InputFileUpload from "./Common/FileUpload";
+
 
 const defaultTheme = createTheme();
 
-export default function DashBoard() {
 export default function DashBoard() {
   const dispatch = useDispatch();
 
@@ -33,7 +30,6 @@ export default function DashBoard() {
 
   const [formData, setFormData] = useState({
     text: "",
-    tweetImage: "",
     tweetImage: "",
   });
 

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import CardMedia from "@mui/material/CardMedia";
-import CardMedia from "@mui/material/CardMedia";
 import { useState } from "react";
 
 import Stack from "@mui/material/Stack";
@@ -60,9 +59,7 @@ export default function GetTweet() {
   const handleEditSubmit = async (newid, newText) => {
     try {
       await instance.put(`/tweet/updateTweet/${newid}`, { newText });
-      const response = await instance.get(
-        `/tweet/gettweet?page=${page}&limit=2`
-      );
+
       const response = await instance.get(
         `/tweet/gettweet?page=${page}&limit=2`
       );
@@ -78,7 +75,6 @@ export default function GetTweet() {
 
   useEffect(() => {
     instance
-      .get(`/tweet/gettweet?page=${page}&limit=2`)
       .get(`/tweet/gettweet?page=${page}&limit=2`)
       .then((response) => {
         dispatch(getTweet(response.data.data));
@@ -103,7 +99,6 @@ export default function GetTweet() {
       document.removeEventListener("mousedown", handleDocumentClick);
     };
   }, [editableTweetId?.id]);
-  }, [page]);
 
   useEffect(() => {
     const handleDocumentClick = (e) => {
