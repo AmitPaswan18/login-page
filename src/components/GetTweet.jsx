@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import CardMedia from "@mui/material/CardMedia";
+import CardMedia from "@mui/material/CardMedia";
 import { useState } from "react";
 
 import Stack from "@mui/material/Stack";
@@ -62,6 +63,9 @@ export default function GetTweet() {
       const response = await instance.get(
         `/tweet/gettweet?page=${page}&limit=2`
       );
+      const response = await instance.get(
+        `/tweet/gettweet?page=${page}&limit=2`
+      );
       dispatch(getTweet(response.data.data));
     } catch (error) {
       console.log("Failed to update the tweet", error.message);
@@ -75,12 +79,30 @@ export default function GetTweet() {
   useEffect(() => {
     instance
       .get(`/tweet/gettweet?page=${page}&limit=2`)
+      .get(`/tweet/gettweet?page=${page}&limit=2`)
       .then((response) => {
         dispatch(getTweet(response.data.data));
       })
       .catch((error) => {
         console.log("Failed to get the tweet", error.message);
       });
+  }, [page]);
+
+  useEffect(() => {
+    const handleDocumentClick = (e) => {
+      if (!e.target.closest("#input-with-icon-adornment")) {
+        const newText = document.getElementById(
+          "input-with-icon-adornment"
+        ).value;
+        handleEditSubmit(editableTweetId.id, newText);
+      }
+    };
+    document.addEventListener("mousedown", handleDocumentClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentClick);
+    };
+  }, [editableTweetId?.id]);
   }, [page]);
 
   useEffect(() => {
