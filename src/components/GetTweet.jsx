@@ -100,22 +100,6 @@ export default function GetTweet() {
     };
   }, [editableTweetId?.id]);
 
-  useEffect(() => {
-    const handleDocumentClick = (e) => {
-      if (!e.target.closest("#input-with-icon-adornment")) {
-        const newText = document.getElementById(
-          "input-with-icon-adornment"
-        ).value;
-        handleEditSubmit(editableTweetId.id, newText);
-      }
-    };
-    document.addEventListener("mousedown", handleDocumentClick);
-
-    return () => {
-      document.removeEventListener("mousedown", handleDocumentClick);
-    };
-  }, [editableTweetId?.id]);
-
   return (
     <>
       <div className="flex justify-center fixed md:bottom-10 md:left-[37%] left-10 bottom-0">
