@@ -17,7 +17,7 @@ import { useState } from "react";
 import { instance } from "../utils/axiosInstance";
 import GetTweet from "./GetTweet";
 import { startCorn } from "../redux/Slices/tweetSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import InputFileUpload from "./Common/FileUpload";
 
 const defaultTheme = createTheme();
@@ -95,6 +95,10 @@ export default function DashBoard() {
     });
   };
 
+  const isLoginAuthenticated = useSelector(
+    (state) => state.auth.isLoginAuthenticated
+  );
+
   const Textarea = styled(BaseTextareaAutosize)(
     ({ theme }) => `
     width: 320px;
@@ -154,134 +158,136 @@ export default function DashBoard() {
   };
 
   return (
-    <div>
-      <div className="flex">
-        <div className="flex h-fit md:h-full md:flex-row md:w-full  mt-2 gap-2 px-5">
-          <div className="flex md:h-10 h-fit md:flex-row justify-evenly gap-2 ">
-            <Button
-              sx={{
-                "@media (max-width: 740px)": {
-                  fontSize: "8px",
-                },
-              }}
-              onClick={handleClickShowAddTweet}
-              onMouseDown={handleMouseDown}
-              variant="contained">
-              Add Tweet
-            </Button>
-            <Button
-              sx={{
-                position: "fixed",
-                right: "20px",
-                "@media (max-width: 740px)": {
-                  display: "flex",
-                  fontSize: "8px",
-                },
-              }}
-              variant="contained"
-              onClick={handlestartCorn}>
-              Upload
-            </Button>
-            <Button
-              sx={{
-                position: "fixed",
-                right: "120px",
-                "@media (max-width: 740px)": {
-                  display: "flex",
-                  right: "90px",
-                  fontSize: "8px",
-                },
-              }}
-              onClick={handlestopCorn}
-              variant="contained">
-              Stop
-            </Button>
+    isLoginAuthenticated && (
+      <div>
+        <div className="flex">
+          <div className="flex h-fit md:h-full md:flex-row md:w-full  mt-2 gap-2 px-5">
+            <div className="flex md:h-10 h-fit md:flex-row justify-evenly gap-2 ">
+              <Button
+                sx={{
+                  "@media (max-width: 740px)": {
+                    fontSize: "8px",
+                  },
+                }}
+                onClick={handleClickShowAddTweet}
+                onMouseDown={handleMouseDown}
+                variant="contained">
+                Add Tweet
+              </Button>
+              <Button
+                sx={{
+                  position: "fixed",
+                  right: "20px",
+                  "@media (max-width: 740px)": {
+                    display: "flex",
+                    fontSize: "8px",
+                  },
+                }}
+                variant="contained"
+                onClick={handlestartCorn}>
+                Upload
+              </Button>
+              <Button
+                sx={{
+                  position: "fixed",
+                  right: "120px",
+                  "@media (max-width: 740px)": {
+                    display: "flex",
+                    right: "90px",
+                    fontSize: "8px",
+                  },
+                }}
+                onClick={handlestopCorn}
+                variant="contained">
+                Stop
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-      <Typography
-        sx={{
-          display: "flex",
-          height: "fit",
-          justifyContent: "center",
-          fontFamily: "Poppins",
-          marginTop: "5px",
-          fontSize: "26px",
-          lineHeight: "1",
-          "@media (max-width: 740px)": {
-            fontSize: "16px",
-          },
-        }}
-        variant="h6"
-        component="div">
-        Recent Tweets
-      </Typography>
+        <Typography
+          sx={{
+            display: "flex",
+            height: "fit",
+            justifyContent: "center",
+            fontFamily: "Poppins",
+            marginTop: "5px",
+            fontSize: "26px",
+            lineHeight: "1",
+            "@media (max-width: 740px)": {
+              fontSize: "16px",
+            },
+          }}
+          variant="h6"
+          component="div">
+          Recent Tweets
+        </Typography>
 
-      {showTweet ? (
-        <div className="md:w-[100%] w-full h-[86vh] flex justify-center items-center">
-          <ThemeProvider theme={defaultTheme}>
-            <Container component="main" maxWidth="xs">
-              <CssBaseline />
-              <Box className="shadow-lg shadow-slate-700 w-full flex flex-col items-center border-cyan-800 md:border border-0 p-3 bg-white rounded-lg md:h-[90%] h-full">
-                <Box
-                  component="form"
-                  onSubmit={handleSubmit}
-                  noValidate
-                  sx={{ mt: 1, width: "80%" }}>
-                  <div className="mt-3">
-                    <InputLabel className="text-[#CBCBCB]" htmlFor="text">
-                      <Typography
-                        sx={{
-                          display: "flex",
-                          fontFamily: "Poppins",
-                          fontSize: "20px",
-                          lineHeight: "1",
-                        }}
-                        component="h1"
-                        variant="h6">
-                        Tweet
-                      </Typography>
-                    </InputLabel>
-                    <FormControl variant="standard" sx={{ width: "100%" }}>
-                      <Textarea
-                        id="text"
-                        name="text"
-                        label="text"
-                        aria-label="text"
-                        minRows={3}
-                        onKeyDown={handleKeyDown}
-                        placeholder="What is happening!?"
-                        sx={{ marginTop: 1, width: "100%" }}
-                      />
-                      <div className="flex justify-center mt-2 w-full">
-                        <InputFileUpload
-                          id="tweetImage"
-                          onChange={handleFileChange}
-                          name="tweetImage"
+        {showTweet ? (
+          <div className="md:w-[100%] w-full h-[86vh] flex justify-center items-center">
+            <ThemeProvider theme={defaultTheme}>
+              <Container component="main" maxWidth="xs">
+                <CssBaseline />
+                <Box className="shadow-lg shadow-slate-700 w-full flex flex-col items-center border-cyan-800 md:border border-0 p-3 bg-white rounded-lg md:h-[90%] h-full">
+                  <Box
+                    component="form"
+                    onSubmit={handleSubmit}
+                    noValidate
+                    sx={{ mt: 1, width: "80%" }}>
+                    <div className="mt-3">
+                      <InputLabel className="text-[#CBCBCB]" htmlFor="text">
+                        <Typography
+                          sx={{
+                            display: "flex",
+                            fontFamily: "Poppins",
+                            fontSize: "20px",
+                            lineHeight: "1",
+                          }}
+                          component="h1"
+                          variant="h6">
+                          Tweet
+                        </Typography>
+                      </InputLabel>
+                      <FormControl variant="standard" sx={{ width: "100%" }}>
+                        <Textarea
+                          id="text"
+                          name="text"
+                          label="text"
+                          aria-label="text"
+                          minRows={3}
+                          onKeyDown={handleKeyDown}
+                          placeholder="What is happening!?"
+                          sx={{ marginTop: 1, width: "100%" }}
                         />
-                      </div>
-                    </FormControl>
-                  </div>
-                  <Button
-                    type="submit"
-                    fullWidth
-                    className="bg-cyan-500 opacity-90"
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2, width: "100%" }}>
-                    Post
-                  </Button>
-                  <Grid
-                    container
-                    justifyContent="center"
-                    marginBottom="30px"></Grid>
+                        <div className="flex justify-center mt-2 w-full">
+                          <InputFileUpload
+                            id="tweetImage"
+                            onChange={handleFileChange}
+                            name="tweetImage"
+                          />
+                        </div>
+                      </FormControl>
+                    </div>
+                    <Button
+                      type="submit"
+                      fullWidth
+                      className="bg-cyan-500 opacity-90"
+                      variant="contained"
+                      sx={{ mt: 3, mb: 2, width: "100%" }}>
+                      Post
+                    </Button>
+                    <Grid
+                      container
+                      justifyContent="center"
+                      marginBottom="30px"></Grid>
+                  </Box>
                 </Box>
-              </Box>
-            </Container>
-          </ThemeProvider>
-        </div>
-      ) : (
-        <GetTweet />
-      )}
-    </div>
+              </Container>
+            </ThemeProvider>
+          </div>
+        ) : (
+          <GetTweet />
+        )}
+      </div>
+    )
   );
 }
