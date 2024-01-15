@@ -20,7 +20,6 @@ import { startCorn } from "../redux/Slices/tweetSlice";
 import { useDispatch } from "react-redux";
 import InputFileUpload from "./Common/FileUpload";
 
-
 const defaultTheme = createTheme();
 
 export default function DashBoard() {
@@ -52,31 +51,30 @@ export default function DashBoard() {
   };
 
   const handleSubmit = async (event) => {
-    try {
-      event.preventDefault();
-      const form = event.target.closest("form");
-      if (!form) {
-        throw new Error("Form element not found");
-      }
-      const data = new FormData(form);
-      const fileInput = form.querySelector('input[type="file"]');
+    event.preventDefault();
+    const form = event.target.closest("form");
+    if (!form) {
+      throw new Error("Form element not found");
+    }
+    const data = new FormData(form);
+    const fileInput = form.querySelector('input[type="file"]');
 
-      if (fileInput) {
-        const file = fileInput.files[0];
-        data.append("tweetImage", file);
-      }
+    if (fileInput) {
+      const file = fileInput.files[0];
+      data.append("tweetImage", file);
+      console.log(file);
+    }
 
-      const response = await instance.post("/tweet/createtweet", data);
-
-      if (response.status === 200) {
+    instance
+      .post("/tweet/createtweet", data)
+      .then((response) => {
+        console.log(response);
         setFormData({ text: "", tweetImage: "" });
         setShowTweet(false);
-      } else {
-        throw new Error(`Unexpected response status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Error submitting the tweet:", error.message);
-    }
+      })
+      .catch((errr) => {
+        console.log(errr);
+      });
   };
 
   const handlestartCorn = () => {
@@ -255,13 +253,6 @@ export default function DashBoard() {
                         placeholder="What is happening!?"
                         sx={{ marginTop: 1, width: "100%" }}
                       />
-                      <div className="flex justify-center mt-2 w-full">
-                        <InputFileUpload
-                          id="tweetImage"
-                          onChange={handleFileChange}
-                          name="tweetImage"
-                        />
-                      </div>
                       <div className="flex justify-center mt-2 w-full">
                         <InputFileUpload
                           id="tweetImage"
