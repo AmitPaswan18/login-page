@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import CardMedia from "@mui/material/CardMedia";
 import { useState } from "react";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 import Stack from "@mui/material/Stack";
 import {
@@ -34,6 +35,7 @@ export default function GetTweet() {
 
   const [editedText, setEditedText] = useState("");
   const [page, setPage] = useState(1);
+  const [horizontalDot, setHorizontalDot] = useState(true);
 
   const format1 = "YYYY-MM-DD HH:mm";
 
@@ -53,6 +55,7 @@ export default function GetTweet() {
       const initialText = tweetToEdit.text;
       setEditedText(initialText);
       dispatch(setEditable({ id: newid, initialText }));
+      setHorizontalDot(true);
     }
   };
 
@@ -60,16 +63,20 @@ export default function GetTweet() {
     try {
       await instance.put(`/tweet/updateTweet/${newid}`, { newText });
 
+      setHorizontalDot(true);
+
       const response = await instance.get(
         `/tweet/gettweet?page=${page}&limit=2`
       );
       dispatch(getTweet(response.data.data));
+      setHorizontalDot(true);
     } catch (error) {
       console.log("Failed to update the tweet", error.message);
     }
   };
 
   const handleChange = (event, value) => {
+    setHorizontalDot(true);
     setPage(value);
   };
 
@@ -107,12 +114,18 @@ export default function GetTweet() {
           <Pagination count={10} page={page} onChange={handleChange} />
         </Stack>
       </div>
-      <div className="flex flex-col md:flex-row justify-evenly md:gap-10 gap-2 ">
+      <div className="flex md:mt-10 mt-0 flex-col justify-center gap-2 w-full ">
         {tweetData.length > 0 ? (
           tweetData.map((ele) => (
-            <div key={ele._id}>
+            <div key={ele._id} className=" w-[100%] flex justify-center">
               {isEditable && editableTweetId.id === ele._id ? (
-                <Card sx={{ maxWidth: 345, height: "340px", overflow: "auto" }}>
+                <Card
+                  sx={{
+                    maxWidth: 345,
+                    boxShadow: "none",
+                    height: "340px",
+                    overflow: "auto",
+                  }}>
                   <CardActionArea sx={{ width: "fit" }}>
                     <Typography
                       sx={{
@@ -129,31 +142,16 @@ export default function GetTweet() {
                       component="div">
                       Tweets
                     </Typography>
-                    <CardMedia
-                      component="img"
-                      style={{
-                        width: "100%",
-                        height: "140px",
-                        objectFit: "cover",
-                      }}
-                      image={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
-                      alt=" Tweet Image"
-                    />
+                    {ele.tweetImage != undefined && (
+                      <CardMedia
+                        sx={{ borderRadius: "10px" }}
+                        height="140"
+                        image={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
+                      />
+                    )}
                     <CardContent>
                       <Typography gutterBottom variant="h5" component="div">
                         {moment(ele.dateAndTime).format(format1)}
-                        <>
-                          <IconButton
-                            onClick={() => handleDelete(ele._id)}
-                            aria-label="delete">
-                            <DeleteIcon />
-                          </IconButton>
-                          <IconButton
-                            onClick={() => handleEdit(ele._id)}
-                            aria-label="edit">
-                            <EditIcon />
-                          </IconButton>
-                        </>
                       </Typography>
 
                       <Typography variant="body2" color="text.secondary">
@@ -190,55 +188,70 @@ export default function GetTweet() {
                 </Card>
               ) : (
                 <>
-                  <Card
-                    sx={{
-                      maxWidth: 345,
-                      height: "340px",
-                      overflow: "auto",
-                    }}>
+                  <Card className="md:w-[50%] w-full max-h-fit">
                     <CardActionArea>
-                      <Typography
-                        sx={{
-                          mt: 1,
-                          mb: 1,
-                          width: "100%",
-                          display: "flex",
-                          justifyContent: "center",
-                          fontFamily: "Poppins",
-                          fontSize: "16px",
-                          lineHeight: "1",
-                        }}
-                        variant="h6"
-                        component="div">
-                        Tweets
-                      </Typography>
-                      <CardMedia
-                        component="img"
-                        height="140"
-                        image={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
-                        alt="tweet image"
-                      />
-                      <CardContent>
-                        <Typography gutterBottom variant="h5" component="div">
-                          {moment(ele.dateAndTime).format(format1)}
-                          <span className="pl-2">
-                            <IconButton
-                              onClick={() => handleDelete(ele._id)}
-                              aria-label="delete">
-                              <DeleteIcon />
-                            </IconButton>
-                            <IconButton
-                              onClick={() => handleEdit(ele._id)}
-                              aria-label="edit">
-                              <EditIcon />
-                            </IconButton>
-                          </span>
-                        </Typography>
+                      <div className="flex">
+                        <div>
+                          {ele.tweetImage != undefined && (
+                            <CardMedia
+                              sx={{
+                                height: "150px",
+                                width: "180px",
+                                "@media (max-width: 600px)": {
+                                  height: "100px",
+                                  width: "120px",
+                                },
+                                "@media (min-width: 601px) and (max-width: 900px)":
+                                  {
+                                    height: "120px",
+                                    width: "144px",
+                                  },
+                              }}
+                              image={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
+                            />
+                          )}
+                        </div>
+                        <div className="p-2 max-h-fit">
+                          <Typography
+                            sx={{
+                              mb: 1,
+                              width: "100%",
+                              fontFamily: "Poppins",
+                              fontSize: "14px",
+                              lineHeight: "1",
+                            }}
+                            component="div">
+                            {`${ele.text}`}
+                          </Typography>
 
-                        <Typography variant="body2" color="text.secondary">
-                          {`${ele.text}`}
-                        </Typography>
-                      </CardContent>
+                          <Typography>
+                            <span className="text-sm">
+                              {moment(ele.dateAndTime).format(format1)}
+                            </span>
+                            <span className="pl-2">
+                              {horizontalDot ? (
+                                <MoreHorizIcon
+                                  onClick={() =>
+                                    setHorizontalDot(false)
+                                  }></MoreHorizIcon>
+                              ) : (
+                                <>
+                                  <IconButton
+                                    onClick={() => handleDelete(ele._id)}
+                                    aria-label="delete">
+                                    <DeleteIcon />
+                                  </IconButton>
+                                  <IconButton
+                                    onClick={() => handleEdit(ele._id)}
+                                    aria-label="edit">
+                                    <EditIcon />
+                                  </IconButton>
+                                </>
+                              )}
+                            </span>
+                          </Typography>
+                        </div>
+                      </div>
                     </CardActionArea>
                   </Card>
                 </>
