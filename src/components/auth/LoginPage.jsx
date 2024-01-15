@@ -3,7 +3,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import { Avatar } from "@mui/material";
 import { useState } from "react";
 import bgimage from "../assets/bgimage.webp";
 
@@ -13,9 +12,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import FormControl from "@mui/material/FormControl";
 
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import FacebookIcon from "@mui/icons-material/Facebook";
-import TwitterIcon from "@mui/icons-material/Twitter";
-import GoogleIcon from "@mui/icons-material/Google";
+
 import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -188,24 +185,6 @@ export default function LoginForm() {
                   Or Sign Up Using
                 </Typography>
 
-                <div className="h-fit flex flex-row  justify-center  ">
-                  <Avatar sx={{ m: 1, bgcolor: "blue" }}>
-                    <button>
-                      {" "}
-                      <FacebookIcon />
-                    </button>
-                  </Avatar>
-                  <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-                    <button>
-                      <GoogleIcon />
-                    </button>
-                  </Avatar>
-                  <Avatar sx={{ m: 1, bgcolor: "red" }}>
-                    <button>
-                      <TwitterIcon />
-                    </button>
-                  </Avatar>
-                </div>
                 <Grid container justifyContent="center" marginBottom="30px">
                   <Grid item>
                     <Link underline="none" href="#" variant="body2">

@@ -31,12 +31,6 @@ const tweetAction = createSlice({
       state.isEditable = true;
       state.editableTweetId = action.payload;
     },
-    startCorn(state, action) {
-      state.isIdle = action.payload;
-    },
-    stopCorn(state, action) {
-      state.isIdle = false;
-    },
   },
 });
 

@@ -16,15 +16,12 @@ import { styled } from "@mui/system";
 import { useState } from "react";
 import { instance } from "../utils/axiosInstance";
 import GetTweet from "./GetTweet";
-import { startCorn } from "../redux/Slices/tweetSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import InputFileUpload from "./Common/FileUpload";
 
 const defaultTheme = createTheme();
 
 export default function DashBoard() {
-  const dispatch = useDispatch();
-
   const [showTweet, setShowTweet] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -77,24 +74,6 @@ export default function DashBoard() {
       });
   };
 
-  const handlestartCorn = () => {
-    instance.get("/tweetcron/startcron").then((response) => {
-      console.log(response);
-      if (response.status == 200) {
-        dispatch(startCorn(response.status));
-      }
-    });
-  };
-
-  const handlestopCorn = () => {
-    instance.get("/tweetcron/stopcron").then((response) => {
-      console.log(response);
-      if (response.status == 200) {
-        dispatch(startCorn(response.status));
-      }
-    });
-  };
-
   const isLoginAuthenticated = useSelector(
     (state) => state.auth.isLoginAuthenticated
   );
@@ -106,6 +85,7 @@ export default function DashBoard() {
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.5;
+    resize: none ;
     padding: 8px 12px;
     border-radius: 8px;
     color: ${theme.palette.mode === "dark" ? grey[300] : grey[900]};
@@ -126,7 +106,7 @@ export default function DashBoard() {
       };
     }
 
-    // firefox
+   
     &:focus-visible {
       outline: 0;
     }
@@ -173,33 +153,6 @@ export default function DashBoard() {
                 onMouseDown={handleMouseDown}
                 variant="contained">
                 Add Tweet
-              </Button>
-              <Button
-                sx={{
-                  position: "fixed",
-                  right: "20px",
-                  "@media (max-width: 740px)": {
-                    display: "flex",
-                    fontSize: "8px",
-                  },
-                }}
-                variant="contained"
-                onClick={handlestartCorn}>
-                Upload
-              </Button>
-              <Button
-                sx={{
-                  position: "fixed",
-                  right: "120px",
-                  "@media (max-width: 740px)": {
-                    display: "flex",
-                    right: "90px",
-                    fontSize: "8px",
-                  },
-                }}
-                onClick={handlestopCorn}
-                variant="contained">
-                Stop
               </Button>
             </div>
           </div>
@@ -253,7 +206,7 @@ export default function DashBoard() {
                           name="text"
                           label="text"
                           aria-label="text"
-                          minRows={3}
+                          minRows={4}
                           onKeyDown={handleKeyDown}
                           placeholder="What is happening!?"
                           sx={{ marginTop: 1, width: "100%" }}
