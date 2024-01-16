@@ -6,6 +6,7 @@ export const initialState = {
   isEditable: false,
   editableTweetId: null,
   isIdle: false,
+  totalTweets: null,
 };
 
 const tweetAction = createSlice({
@@ -15,6 +16,7 @@ const tweetAction = createSlice({
     getTweet(state, action) {
       state.tweet = action.payload;
       state.isEditable = false;
+      state.totaTweets = action.payload;
       state.editableTweetId = null;
     },
     deleteTweet(state, action) {
@@ -31,6 +33,10 @@ const tweetAction = createSlice({
       state.isEditable = true;
       state.editableTweetId = action.payload;
     },
+
+    tweetPage(state, action) {
+      state.totalTweets = action.payload;
+    },
   },
 });
 
@@ -41,6 +47,7 @@ export const {
   setEditable,
   startCorn,
   stopCorn,
+  tweetPage,
 } = tweetAction.actions;
 
 export default tweetAction.reducer;

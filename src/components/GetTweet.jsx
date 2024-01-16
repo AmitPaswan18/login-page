@@ -1,8 +1,7 @@
 import { useEffect } from "react";
-import CardMedia from "@mui/material/CardMedia";
 import { useState } from "react";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-
+import DeleteModal from "./Common/DeleteModal";
 import Stack from "@mui/material/Stack";
 import {
   Pagination,
@@ -21,7 +20,7 @@ import moment from "moment";
 import { instance } from "../utils/axiosInstance";
 
 import { useDispatch, useSelector } from "react-redux";
-import { getTweet, setEditable } from "../redux/Slices/tweetSlice";
+import { getTweet, setEditable, tweetPage } from "../redux/Slices/tweetSlice";
 
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -30,12 +29,22 @@ export default function GetTweet() {
   const dispatch = useDispatch();
 
   const tweetData = useSelector((state) => state.tweet.tweet);
+  const tweetPageCount = useSelector((state) => state.tweet.totalTweets);
   const isEditable = useSelector((state) => state.tweet.isEditable);
   const editableTweetId = useSelector((state) => state.tweet.editableTweetId);
 
+  const totalTweetsCount = Math.ceil(tweetPageCount / 2);
+
+  const [deleteWarn, setDeleteWarn] = useState(false);
   const [editedText, setEditedText] = useState("");
+
   const [page, setPage] = useState(1);
-  const [horizontalDot, setHorizontalDot] = useState(true);
+
+  const [selectedTweetId, setSelectedTweetId] = useState(null);
+
+  const handleMoreOptionsClick = (tweetId) => {
+    setSelectedTweetId(tweetId);
+  };
 
   const format1 = "YYYY-MM-DD HH:mm";
 
@@ -43,9 +52,15 @@ export default function GetTweet() {
     try {
       await instance.delete(`tweet/deleteTweet/${newid}`);
       dispatch(getTweet(tweetData.filter((ele) => ele._id !== newid)));
+      setSelectedTweetId(null);
+      setDeleteWarn(false);
     } catch (error) {
       console.log("Error in deleting the tweet ", error.message);
     }
+  };
+
+  const hanldeDeletePopUp = () => {
+    setDeleteWarn(true);
   };
 
   const handleEdit = (newid) => {
@@ -55,36 +70,32 @@ export default function GetTweet() {
       const initialText = tweetToEdit.text;
       setEditedText(initialText);
       dispatch(setEditable({ id: newid, initialText }));
-      setHorizontalDot(true);
     }
   };
 
   const handleEditSubmit = async (newid, newText) => {
     try {
       await instance.put(`/tweet/updateTweet/${newid}`, { newText });
-
-      setHorizontalDot(true);
-
-      const response = await instance.get(
-        `/tweet/gettweet?page=${page}&limit=2`
-      );
+      const response = await instance.get(`/tweet/gettweet?page=${1}&limit=2`);
       dispatch(getTweet(response.data.data));
-      setHorizontalDot(true);
+
+      dispatch(getTweet(response.data.data));
     } catch (error) {
       console.log("Failed to update the tweet", error.message);
     }
   };
 
   const handleChange = (event, value) => {
-    setHorizontalDot(true);
     setPage(value);
   };
 
   useEffect(() => {
     instance
-      .get(`/tweet/gettweet?page=${page}&limit=2`)
+      .get(`/tweet/gettweet?page=${page}&limit=${2}`)
       .then((response) => {
         dispatch(getTweet(response.data.data));
+        dispatch(tweetPage(response.data.totalDocument));
+        console.log(response.data.totalDocument);
       })
       .catch((error) => {
         console.log("Failed to get the tweet", error.message);
@@ -109,23 +120,21 @@ export default function GetTweet() {
 
   return (
     <>
-      <div className="flex justify-center fixed md:bottom-10 md:left-[37%] left-10 bottom-0">
+      <div className="flex justify-center fixed md:bottom-10 md:left-[40%] left-10 bottom-0">
         <Stack spacing={2}>
-          <Pagination count={10} page={page} onChange={handleChange} />
+          <Pagination
+            count={totalTweetsCount}
+            page={page}
+            onChange={handleChange}
+          />
         </Stack>
       </div>
-      <div className="flex md:mt-10 mt-0 flex-col justify-center gap-2 w-full ">
+      <div className="flex md:mt-10 mt-0 flex-col justify-center md:mb-10 mb-0 gap-2 w-full ">
         {tweetData.length > 0 ? (
           tweetData.map((ele) => (
-            <div key={ele._id} className=" w-[100%] flex justify-center">
+            <div key={ele._id} className=" w-[100%]  flex justify-center">
               {isEditable && editableTweetId.id === ele._id ? (
-                <Card
-                  sx={{
-                    maxWidth: 345,
-                    boxShadow: "none",
-                    height: "340px",
-                    overflow: "auto",
-                  }}>
+                <Card className="md:w-[50%] w-full max-h-fit ">
                   <CardActionArea sx={{ width: "fit" }}>
                     <Typography
                       sx={{
@@ -143,11 +152,13 @@ export default function GetTweet() {
                       Tweets
                     </Typography>
                     {ele.tweetImage != undefined && (
-                      <CardMedia
-                        sx={{ borderRadius: "10px" }}
-                        height="140"
-                        image={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
-                      />
+                      <div>
+                        <img
+                          className="h-auto max-w-xs"
+                          src={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
+                          alt=""
+                        />
+                      </div>
                     )}
                     <CardContent>
                       <Typography gutterBottom variant="h5" component="div">
@@ -188,71 +199,63 @@ export default function GetTweet() {
                 </Card>
               ) : (
                 <>
-                  <Card className="md:w-[50%] w-full max-h-fit">
-                    <CardActionArea>
-                      <div className="flex">
+                  <Card className="md:w-[70%] lg:w-[60%]  w-full max-h-fit">
+                    <div className="flex flex-col md:flex-row w-full ">
+                      {ele.tweetImage != undefined && (
                         <div>
-                          {ele.tweetImage != undefined && (
-                            <CardMedia
-                              sx={{
-                                height: "150px",
-                                width: "180px",
-                                "@media (max-width: 600px)": {
-                                  height: "100px",
-                                  width: "120px",
-                                },
-                                "@media (min-width: 601px) and (max-width: 900px)":
-                                  {
-                                    height: "120px",
-                                    width: "144px",
-                                  },
-                              }}
-                              image={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
-                            />
-                          )}
+                          <img
+                            className="h-auto max-w-xs"
+                            src={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
+                            alt=""
+                          />
                         </div>
-                        <div className="p-2 max-h-fit">
-                          <Typography
-                            sx={{
-                              mb: 1,
-                              width: "100%",
-                              fontFamily: "Poppins",
-                              fontSize: "14px",
-                              lineHeight: "1",
-                            }}
-                            component="div">
-                            {`${ele.text}`}
-                          </Typography>
+                      )}
 
-                          <Typography>
-                            <span className="text-sm">
-                              {moment(ele.dateAndTime).format(format1)}
-                            </span>
-                            <span className="pl-2">
-                              {horizontalDot ? (
-                                <MoreHorizIcon
-                                  onClick={() =>
-                                    setHorizontalDot(false)
-                                  }></MoreHorizIcon>
-                              ) : (
-                                <>
-                                  <IconButton
-                                    onClick={() => handleDelete(ele._id)}
-                                    aria-label="delete">
-                                    <DeleteIcon />
-                                  </IconButton>
-                                  <IconButton
-                                    onClick={() => handleEdit(ele._id)}
-                                    aria-label="edit">
-                                    <EditIcon />
-                                  </IconButton>
-                                </>
-                              )}
-                            </span>
-                          </Typography>
-                        </div>
+                      <div className="p-2 w-fit max-h-fit">
+                        <Typography
+                          sx={{
+                            mb: 1,
+                            width: "100%",
+                            fontFamily: "Poppins",
+                            fontSize: "14px",
+                            lineHeight: "1",
+                          }}
+                          component="div">
+                          {`${ele.text}`}
+                        </Typography>
+
+                        <Typography>
+                          <span className="text-sm">
+                            {moment(ele.dateAndTime).format(format1)}
+                          </span>
+                          <span className="pl-2">
+                            {selectedTweetId === ele._id ? (
+                              <>
+                                <IconButton
+                                  onClick={() => hanldeDeletePopUp()}
+                                  aria-label="delete">
+                                  <DeleteIcon />
+                                </IconButton>
+                                <IconButton
+                                  onClick={() => handleEdit(ele._id)}
+                                  aria-label="edit">
+                                  <EditIcon />
+                                </IconButton>
+                              </>
+                            ) : (
+                              <MoreHorizIcon
+                                onClick={() => handleMoreOptionsClick(ele._id)}
+                              />
+                            )}
+                          </span>
+                        </Typography>
+                        {deleteWarn && (
+                          <DeleteModal
+                            onClick={() => handleDelete(selectedTweetId)}
+                          />
+                        )}
                       </div>
-                    </CardActionArea>
+                    </div>
                   </Card>
                 </>
               )}
