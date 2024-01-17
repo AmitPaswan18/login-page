@@ -16,7 +16,6 @@ import { styled } from "@mui/system";
 import { useState } from "react";
 import { instance } from "../utils/axiosInstance";
 import GetTweet from "./GetTweet";
-import { useSelector } from "react-redux";
 import InputFileUpload from "./Common/FileUpload";
 
 const defaultTheme = createTheme();
@@ -134,7 +133,7 @@ export default function DashBoard() {
   };
 
   return (
-    <div>
+    <div className="bg-[#E5E7EB] h-[100vh] max-w-full relative">
       <div className="flex">
         <div className="flex h-fit md:h-full md:flex-row md:w-full  mt-2 gap-2 px-5">
           <div className="flex md:h-10 h-fit md:flex-row justify-evenly gap-2 ">

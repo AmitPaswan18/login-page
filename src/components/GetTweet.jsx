@@ -1,19 +1,23 @@
 import { useEffect } from "react";
 import { useState } from "react";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import DeleteModal from "./Common/DeleteModal";
 import Stack from "@mui/material/Stack";
-import {
-  Pagination,
-  Typography,
-  Input,
-  FormControl,
-  CardContent,
-  CardActionArea,
-  IconButton,
-  Card,
-  Box,
-} from "@mui/material";
+
+import Modal from "@mui/material/Modal";
+
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  fontFamily: "Poppins",
+  bgcolor: "background.paper",
+  border: "2px solid white",
+  boxShadow: 24,
+  p: 4,
+};
+
+import { Pagination, Typography, Box } from "@mui/material";
 
 import moment from "moment";
 
@@ -21,9 +25,7 @@ import { instance } from "../utils/axiosInstance";
 
 import { useDispatch, useSelector } from "react-redux";
 import { getTweet, setEditable, tweetPage } from "../redux/Slices/tweetSlice";
-
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import MenuBarIcon from "./Common/MenuBarIcon";
 
 export default function GetTweet() {
   const dispatch = useDispatch();
@@ -35,16 +37,14 @@ export default function GetTweet() {
 
   const totalTweetsCount = Math.ceil(tweetPageCount / 2);
 
-  const [deleteWarn, setDeleteWarn] = useState(false);
   const [editedText, setEditedText] = useState("");
 
   const [page, setPage] = useState(1);
 
-  const [selectedTweetId, setSelectedTweetId] = useState(null);
+  const [isDeleteModal, setDeleteModal] = useState(false);
+  const [isTextEdited, setIsTextEdited] = useState(false);
 
-  const handleMoreOptionsClick = (tweetId) => {
-    setSelectedTweetId(tweetId);
-  };
+  const [selectedTweetId, setSelectedTweetId] = useState(null);
 
   const format1 = "YYYY-MM-DD HH:mm";
 
@@ -53,23 +53,18 @@ export default function GetTweet() {
       await instance.delete(`tweet/deleteTweet/${newid}`);
       dispatch(getTweet(tweetData.filter((ele) => ele._id !== newid)));
       setSelectedTweetId(null);
-      setDeleteWarn(false);
+      setDeleteModal(false);
     } catch (error) {
       console.log("Error in deleting the tweet ", error.message);
     }
   };
-
-  const hanldeDeletePopUp = () => {
-    setDeleteWarn(true);
-  };
-
   const handleEdit = (newid) => {
     const tweetToEdit = tweetData.find((ele) => ele._id === newid);
-
     if (tweetToEdit) {
       const initialText = tweetToEdit.text;
       setEditedText(initialText);
       dispatch(setEditable({ id: newid, initialText }));
+      setIsTextEdited(false);
     }
   };
 
@@ -78,8 +73,7 @@ export default function GetTweet() {
       await instance.put(`/tweet/updateTweet/${newid}`, { newText });
       const response = await instance.get(`/tweet/gettweet?page=${1}&limit=2`);
       dispatch(getTweet(response.data.data));
-
-      dispatch(getTweet(response.data.data));
+      setIsTextEdited(false);
     } catch (error) {
       console.log("Failed to update the tweet", error.message);
     }
@@ -89,13 +83,17 @@ export default function GetTweet() {
     setPage(value);
   };
 
+  const handleDeleteModal = (tweetId) => {
+    setDeleteModal(true);
+    setSelectedTweetId(tweetId);
+  };
+
   useEffect(() => {
     instance
       .get(`/tweet/gettweet?page=${page}&limit=${2}`)
       .then((response) => {
         dispatch(getTweet(response.data.data));
         dispatch(tweetPage(response.data.totalDocument));
-        console.log(response.data.totalDocument);
       })
       .catch((error) => {
         console.log("Failed to get the tweet", error.message);
@@ -120,7 +118,7 @@ export default function GetTweet() {
 
   return (
     <>
-      <div className="flex justify-center fixed md:bottom-10 md:left-[40%] left-10 bottom-0">
+      <div className="flex justify-center mt-2 md:bottom-10 md:left-[40%] left-[33%]  bottom-0">
         <Stack spacing={2}>
           <Pagination
             count={totalTweetsCount}
@@ -129,80 +127,79 @@ export default function GetTweet() {
           />
         </Stack>
       </div>
-      <div className="flex md:mt-10 mt-0 flex-col justify-center md:mb-10 mb-0 gap-2 w-full ">
+      <div className="flex md:mt-10  mt-4 flex-col justify-center md:mb-10 mb-0 gap-2 w-full ">
         {tweetData.length > 0 ? (
           tweetData.map((ele) => (
             <div key={ele._id} className=" w-[100%]  flex justify-center">
               {isEditable && editableTweetId.id === ele._id ? (
-                <Card className="md:w-[50%] w-full max-h-fit ">
-                  <CardActionArea sx={{ width: "fit" }}>
-                    <Typography
-                      sx={{
-                        mt: 1,
-                        mb: 1,
-                        width: "100%",
-                        display: "flex",
-                        justifyContent: "center",
-                        fontFamily: "Poppins",
-                        fontSize: "16px",
-                        lineHeight: "1",
-                      }}
-                      variant="h6"
-                      component="div">
-                      Tweets
-                    </Typography>
-                    {ele.tweetImage != undefined && (
-                      <div>
-                        <img
-                          className="h-auto max-w-xs"
-                          src={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
-                          alt=""
-                        />
-                      </div>
-                    )}
-                    <CardContent>
-                      <Typography gutterBottom variant="h5" component="div">
-                        {moment(ele.dateAndTime).format(format1)}
-                      </Typography>
+                <>
+                  <div>
+                    <Modal
+                      open={true}
+                      aria-labelledby="modal-modal-title"
+                      aria-describedby="modal-modal-description">
+                      <Box className="rounded-md" sx={style}>
+                        <div className="relative p-4 w-full max-w-md max-h-full">
+                          <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                              <h3 className="text-wrap font-semibold text-gray-900 dark:text-white">
+                                Update your Tweet Below
+                              </h3>
+                            </div>
 
-                      <Typography variant="body2" color="text.secondary">
-                        <Box
-                          component="form"
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.currentTarget);
-                            const newText = formData.get("newText");
-                            handleEditSubmit(ele._id, newText);
-                          }}
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                          }}>
-                          <FormControl
-                            sx={{ width: "90%", marginTop: "20px" }}
-                            variant="standard">
-                            <Input
-                              className="rounded-md h-8 w-full text-[#CBCBCB]  focus:outline-none"
-                              name="newText"
-                              placeholder="New Tweet"
-                              value={editedText}
-                              onChange={(e) => {
-                                setEditedText(e.target.value);
-                              }}
-                              id="input-with-icon-adornment"
-                            />
-                          </FormControl>
-                        </Box>
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
+                            <>
+                              <div className="grid gap-4 mb-4 grid-cols-2">
+                                <div className="col-span-2">
+                                  <label
+                                    htmlFor="input-with-icon-adornment"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Enter a new tweet
+                                  </label>
+                                  <textarea
+                                    value={editedText}
+                                    onChange={(e) => {
+                                      setEditedText(e.target.value);
+                                    }}
+                                    id="input-with-icon-adornment"
+                                    name="newText"
+                                    rows="4"
+                                    className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    placeholder="Write new tweet here"></textarea>
+                                </div>
+                              </div>
+                            </>
+                            <div className="w-full flex justify-between p-4">
+                              <button
+                                type="submit"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  const formData = new FormData(
+                                    e.currentTarget
+                                  );
+                                  const newText = formData.get("newText");
+                                  handleEditSubmit(ele._id, newText);
+                                }}
+                                className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                Confirm
+                              </button>
+                              <button
+                                onClick={isTextEdited}
+                                className="text-white inline-flex items-center bg-red-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </Box>
+                    </Modal>
+                  </div>
+                </>
               ) : (
                 <>
-                  <Card className="md:w-[70%] lg:w-[60%]  w-full max-h-fit">
-                    <div className="flex flex-col md:flex-row w-full ">
+                  <div className="md:w-[80%] hover:scale-[101%] ease-out duration-300 lg:max-w-[60%] bg-slate-50 w-full max-h-fit border-2 shadow-2xl shadow-slate-500 rounded-md relative">
+                    <div className="md:w-full w-full flex-col flex md:flex-row">
                       {ele.tweetImage != undefined && (
-                        <div>
+                        <div className="m-1 rounded-md overflow-hidden">
                           <img
                             className="h-auto max-w-xs"
                             src={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
@@ -211,52 +208,30 @@ export default function GetTweet() {
                         </div>
                       )}
 
-                      <div className="p-2 w-fit max-h-fit">
-                        <Typography
-                          sx={{
-                            mb: 1,
-                            width: "100%",
-                            fontFamily: "Poppins",
-                            fontSize: "14px",
-                            lineHeight: "1",
-                          }}
-                          component="div">
-                          {`${ele.text}`}
-                        </Typography>
-
-                        <Typography>
-                          <span className="text-sm">
-                            {moment(ele.dateAndTime).format(format1)}
-                          </span>
-                          <span className="pl-2">
-                            {selectedTweetId === ele._id ? (
-                              <>
-                                <IconButton
-                                  onClick={() => hanldeDeletePopUp()}
-                                  aria-label="delete">
-                                  <DeleteIcon />
-                                </IconButton>
-                                <IconButton
-                                  onClick={() => handleEdit(ele._id)}
-                                  aria-label="edit">
-                                  <EditIcon />
-                                </IconButton>
-                              </>
-                            ) : (
-                              <MoreHorizIcon
-                                onClick={() => handleMoreOptionsClick(ele._id)}
-                              />
-                            )}
-                          </span>
-                        </Typography>
-                        {deleteWarn && (
-                          <DeleteModal
-                            onClick={() => handleDelete(selectedTweetId)}
-                          />
-                        )}
+                      <div className="p-2 text-xs opacity-95 text-gray-900 dark:text-white flex justify-between w-fit max-h-fit">
+                        <div className="flex flex-col justify-between">
+                          <div className="w-[90%] text-base text-black">{`${ele.text}`}</div>
+                          <div>
+                            <Typography>
+                              <span className="text-sm opacity-80">
+                                <span className="text-sm">
+                                  {moment(ele.dateAndTime).format(format1)}
+                                </span>
+                              </span>
+                            </Typography>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </Card>
+
+                    <div className="absolute top-0 right-0">
+                      <MenuBarIcon
+                        handleDelete={() => handleDelete(ele._id)}
+                        handleDeleteModal={() => handleDeleteModal(ele._id)}
+                        handleEdit={() => handleEdit(ele._id)}
+                      />
+                    </div>
+                  </div>
                 </>
               )}
             </div>
@@ -277,7 +252,7 @@ export default function GetTweet() {
             }}
             variant="h6"
             component="div">
-            {` No data to be displyed on page ${page}`}
+            {` No tweets Available`}
           </Typography>
         )}
       </div>
