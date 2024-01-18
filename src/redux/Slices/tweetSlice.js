@@ -3,10 +3,10 @@ export const initialState = {
   tweet: [],
   error: null,
   loading: true,
-  isEditable: false,
   editableTweetId: null,
   isIdle: false,
   totalTweets: null,
+  status: null,
 };
 
 const tweetAction = createSlice({
@@ -15,23 +15,23 @@ const tweetAction = createSlice({
   reducers: {
     getTweet(state, action) {
       state.tweet = action.payload;
-      state.isEditable = false;
-      state.totaTweets = action.payload;
-      state.editableTweetId = null;
+      state.totalTweets = action.payload;
     },
-    deleteTweet(state, action) {
-      state.tweet = action.payload;
-      state.isEditable = false;
+    deleteTweet: (state, action) => {
+      state.tweet = state.tweet.filter((ele) => ele._id !== action.payload.id);
+      state.status = action.payload.status;
       state.editableTweetId = null;
     },
     updateTweet(state, action) {
-      state.tweet = action.payload;
-      state.isEditable = false;
-      state.editableTweetId = null;
+      const { id, newText } = action.payload;
+      state.tweet = state.tweet.map((ele) =>
+        ele._id === id ? { ...ele, text: newText } : ele
+      );
+      state.editableTweetId = action.payload.id;
     },
+
     setEditable(state, action) {
-      state.isEditable = true;
-      state.editableTweetId = action.payload;
+      state.editableTweetId = action.payload.id;
     },
 
     tweetPage(state, action) {
@@ -40,14 +40,7 @@ const tweetAction = createSlice({
   },
 });
 
-export const {
-  getTweet,
-  deleteTweet,
-  updateTweet,
-  setEditable,
-  startCorn,
-  stopCorn,
-  tweetPage,
-} = tweetAction.actions;
+export const { getTweet, deleteTweet, updateTweet, setEditable, tweetPage } =
+  tweetAction.actions;
 
 export default tweetAction.reducer;

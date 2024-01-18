@@ -24,16 +24,24 @@ import moment from "moment";
 import { instance } from "../utils/axiosInstance";
 
 import { useDispatch, useSelector } from "react-redux";
-import { getTweet, setEditable, tweetPage } from "../redux/Slices/tweetSlice";
+import {
+  getTweet,
+  tweetPage,
+  updateTweet,
+  deleteTweet,
+} from "../redux/Slices/tweetSlice";
 import MenuBarIcon from "./Common/MenuBarIcon";
 
 export default function GetTweet() {
   const dispatch = useDispatch();
 
   const tweetData = useSelector((state) => state.tweet.tweet);
+
   const tweetPageCount = useSelector((state) => state.tweet.totalTweets);
-  const isEditable = useSelector((state) => state.tweet.isEditable);
+
   const editableTweetId = useSelector((state) => state.tweet.editableTweetId);
+
+  const [isEditable, setEditable] = useState(false);
 
   const totalTweetsCount = Math.ceil(tweetPageCount / 2);
 
@@ -42,7 +50,6 @@ export default function GetTweet() {
   const [page, setPage] = useState(1);
 
   const [isDeleteModal, setDeleteModal] = useState(false);
-  const [isTextEdited, setIsTextEdited] = useState(false);
 
   const [selectedTweetId, setSelectedTweetId] = useState(null);
 
@@ -50,8 +57,11 @@ export default function GetTweet() {
 
   const handleDelete = async (newid) => {
     try {
-      await instance.delete(`tweet/deleteTweet/${newid}`);
-      dispatch(getTweet(tweetData.filter((ele) => ele._id !== newid)));
+      const response = await instance.delete(`tweet/deleteTweet/${newid}`);
+      if (response.data.status === "success") {
+        gethandleUpdateData();
+        dispatch(deleteTweet({ id: newid, status: "success" }));
+      }
       setSelectedTweetId(null);
       setDeleteModal(false);
     } catch (error) {
@@ -63,17 +73,21 @@ export default function GetTweet() {
     if (tweetToEdit) {
       const initialText = tweetToEdit.text;
       setEditedText(initialText);
-      dispatch(setEditable({ id: newid, initialText }));
-      setIsTextEdited(false);
+      dispatch(updateTweet({ id: newid, newText: initialText }));
+      setEditable(true);
     }
   };
 
   const handleEditSubmit = async (newid, newText) => {
     try {
-      await instance.put(`/tweet/updateTweet/${newid}`, { newText });
-      const response = await instance.get(`/tweet/gettweet?page=${1}&limit=2`);
-      dispatch(getTweet(response.data.data));
-      setIsTextEdited(false);
+      const response = await instance.put(`/tweet/updateTweet/${newid}`, {
+        newText,
+      });
+      const updatedTweet = response.data.data;
+
+      dispatch(updateTweet({ id: newid, newText: updatedTweet.text }));
+      setEditable(false);
+      setOpen(false);
     } catch (error) {
       console.log("Failed to update the tweet", error.message);
     }
@@ -81,6 +95,18 @@ export default function GetTweet() {
 
   const handleChange = (event, value) => {
     setPage(value);
+  };
+
+  const gethandleUpdateData = () => {
+    instance
+      .get(`/tweet/gettweet?page=${1}&limit=${2}`)
+      .then((response) => {
+        dispatch(getTweet(response.data.data));
+        dispatch(tweetPage(response.data.totalDocument));
+      })
+      .catch((error) => {
+        console.log("Failed to get the tweet", error.message);
+      });
   };
 
   const handleDeleteModal = (tweetId) => {
@@ -100,140 +126,76 @@ export default function GetTweet() {
       });
   }, [page]);
 
-  useEffect(() => {
-    const handleDocumentClick = (e) => {
-      if (!e.target.closest("#input-with-icon-adornment")) {
-        const newText = document.getElementById(
-          "input-with-icon-adornment"
-        ).value;
-        handleEditSubmit(editableTweetId.id, newText);
-      }
-    };
-    document.addEventListener("mousedown", handleDocumentClick);
+  const [open, setOpen] = useState(false);
+  const handleOpenEdit = () => {
+    setEditable(true);
+    setOpen(true);
+  };
 
-    return () => {
-      document.removeEventListener("mousedown", handleDocumentClick);
-    };
-  }, [editableTweetId?.id]);
+  const handleDocumentClick = (e) => {
+    if (!e.target.closest("#edit-text")) {
+      const newText = document.getElementById("edit-text").value;
+      handleEditSubmit(editableTweetId, newText);
+    }
+  };
+
+  const handleClose = () => setOpen(false);
 
   return (
     <>
-      <div className="flex justify-center mt-2 md:bottom-10 md:left-[40%] left-[33%]  bottom-0">
-        <Stack spacing={2}>
-          <Pagination
-            count={totalTweetsCount}
-            page={page}
-            onChange={handleChange}
-          />
-        </Stack>
-      </div>
-      <div className="flex md:mt-10  mt-4 flex-col justify-center md:mb-10 mb-0 gap-2 w-full ">
+      <div className="flex relative  md:mt-10  mt-4 flex-col justify-center md:mb-10 mb-0 gap-2 w-full ">
+        <div className="flex fixed z-10 bg-transparent right-0 left-0 justify-center mt-2 bottom-1  ">
+          <Stack spacing={2}>
+            <Pagination
+              count={totalTweetsCount}
+              page={page}
+              onChange={handleChange}
+            />
+          </Stack>
+        </div>
         {tweetData.length > 0 ? (
           tweetData.map((ele) => (
             <div key={ele._id} className=" w-[100%]  flex justify-center">
-              {isEditable && editableTweetId.id === ele._id ? (
-                <>
-                  <div>
-                    <Modal
-                      open={true}
-                      aria-labelledby="modal-modal-title"
-                      aria-describedby="modal-modal-description">
-                      <Box className="rounded-md" sx={style}>
-                        <div className="relative p-4 w-full max-w-md max-h-full">
-                          <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                              <h3 className="text-wrap font-semibold text-gray-900 dark:text-white">
-                                Update your Tweet Below
-                              </h3>
-                            </div>
+              <>
+                <div className="md:w-[80%] hover:scale-[101%] ease-out duration-300 lg:max-w-[60%] bg-slate-50 w-full max-h-fit border-2 shadow-2xl shadow-slate-500 rounded-md relative">
+                  <div className="md:w-full w-full flex-col flex md:flex-row">
+                    {ele.tweetImage != undefined && (
+                      <div className="m-1  rounded-md overflow-hidden">
+                        <img
+                          className="h-auto rounded-md max-w-xs"
+                          src={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
+                          alt=""
+                        />
+                      </div>
+                    )}
 
-                            <>
-                              <div className="grid gap-4 mb-4 grid-cols-2">
-                                <div className="col-span-2">
-                                  <label
-                                    htmlFor="input-with-icon-adornment"
-                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Enter a new tweet
-                                  </label>
-                                  <textarea
-                                    value={editedText}
-                                    onChange={(e) => {
-                                      setEditedText(e.target.value);
-                                    }}
-                                    id="input-with-icon-adornment"
-                                    name="newText"
-                                    rows="4"
-                                    className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                    placeholder="Write new tweet here"></textarea>
-                                </div>
-                              </div>
-                            </>
-                            <div className="w-full flex justify-between p-4">
-                              <button
-                                type="submit"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  const formData = new FormData(
-                                    e.currentTarget
-                                  );
-                                  const newText = formData.get("newText");
-                                  handleEditSubmit(ele._id, newText);
-                                }}
-                                className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                Confirm
-                              </button>
-                              <button
-                                onClick={isTextEdited}
-                                className="text-white inline-flex items-center bg-red-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </Box>
-                    </Modal>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="md:w-[80%] hover:scale-[101%] ease-out duration-300 lg:max-w-[60%] bg-slate-50 w-full max-h-fit border-2 shadow-2xl shadow-slate-500 rounded-md relative">
-                    <div className="md:w-full w-full flex-col flex md:flex-row">
-                      {ele.tweetImage != undefined && (
-                        <div className="m-1 rounded-md overflow-hidden">
-                          <img
-                            className="h-auto max-w-xs"
-                            src={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
-                            alt=""
-                          />
-                        </div>
-                      )}
-
-                      <div className="p-2 text-xs opacity-95 text-gray-900 dark:text-white flex justify-between w-fit max-h-fit">
-                        <div className="flex flex-col justify-between">
-                          <div className="w-[90%] text-base text-black">{`${ele.text}`}</div>
-                          <div>
-                            <Typography>
-                              <span className="text-sm opacity-80">
-                                <span className="text-sm">
-                                  {moment(ele.dateAndTime).format(format1)}
-                                </span>
+                    <div className="p-2 text-xs opacity-95 text-gray-900 dark:text-white flex justify-between w-fit max-h-fit">
+                      <div className="flex flex-col justify-between">
+                        <div className="w-[90%] text-base text-black">{`${ele.text}`}</div>
+                        <div>
+                          <Typography>
+                            <span className="text-sm opacity-80">
+                              <span className="text-sm">
+                                {moment(ele.dateAndTime).format(format1)}
                               </span>
-                            </Typography>
-                          </div>
+                            </span>
+                          </Typography>
                         </div>
                       </div>
                     </div>
-
-                    <div className="absolute top-0 right-0">
-                      <MenuBarIcon
-                        handleDelete={() => handleDelete(ele._id)}
-                        handleDeleteModal={() => handleDeleteModal(ele._id)}
-                        handleEdit={() => handleEdit(ele._id)}
-                      />
-                    </div>
                   </div>
-                </>
-              )}
+
+                  <div className="absolute top-0 right-0">
+                    <MenuBarIcon
+                      onClick={() => setEditable(true)}
+                      handleDelete={() => handleDelete(ele._id)}
+                      handleDeleteModal={() => handleDeleteModal(ele._id)}
+                      handleOpenEdit={handleOpenEdit}
+                      handleEdit={() => handleEdit(ele._id)}
+                    />
+                  </div>
+                </div>
+              </>
             </div>
           ))
         ) : (
@@ -256,6 +218,71 @@ export default function GetTweet() {
           </Typography>
         )}
       </div>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description">
+        <Box className="rounded-md shadow-lg shadow-white" sx={style}>
+          <div className="relative border-2 rounded-md shadow-md shadow-slate-400 p-4 w-full max-w-md max-h-full">
+            <div className="relative bg-white  dark:bg-gray-700">
+              <div className="flex items-center justify-between pb-5 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 className="text-wrap font-medium text-lg  text-gray-900 dark:text-white">
+                  Update your Tweet Below
+                </h3>
+              </div>
+
+              <>
+                <div className="grid gap-4 mb-4 grid-cols-2">
+                  <div className="col-span-2">
+                    <form
+                      id="myForm"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(
+                          document.getElementById("myForm")
+                        );
+                        const newText = formData.get("newText");
+
+                        handleEditSubmit(editableTweetId, newText);
+                      }}>
+                      <label
+                        htmlFor="edit-text"
+                        className="block mb-2 p-2 text-sm font-medium text-gray-900 dark:text-white">
+                        Enter a new tweet
+                      </label>
+                      <textarea
+                        style={{ resize: "none" }}
+                        value={editedText}
+                        onChange={(e) => {
+                          setEditedText(e.target.value);
+                        }}
+                        id="edit-text"
+                        name="newText"
+                        rows="4"
+                        className="block p-2.5 w-full text-xs font-medium text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-200 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Write new tweet here"></textarea>
+                    </form>
+                  </div>
+                </div>
+              </>
+              <div className="w-full flex justify-between p-4">
+                <button
+                  type="submit"
+                  onClick={handleDocumentClick}
+                  className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                  Confirm
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="text-white inline-flex items-center bg-red-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </Box>
+      </Modal>
     </>
   );
 }

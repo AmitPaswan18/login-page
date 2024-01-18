@@ -24,14 +24,14 @@ const style = {
 
 export default function MenuBarIcon({
   handleDeleteModal,
-  handleEdit,
+  handleOpenEdit,
   tweetId,
   handleDelete,
+  handleEdit,
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
   const [confirmedDelete, setConfirmedDelete] = useState(false);
-  const [localTweetId, setLocalTweetId] = useState(null);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -42,17 +42,18 @@ export default function MenuBarIcon({
     setOpen(option === "Delete");
     if (option === "Delete") {
       handleDeleteModal(tweetId);
-      setLocalTweetId(tweetId);
     } else if (option === "Edit") {
-      handleEdit();
+      handleOpenEdit();
+      handleEdit(tweetId);
     } else {
       handleDeleteModal(null);
+      handleEdit(null);
     }
   };
 
   const handleConfirmDelete = () => {
-    handleDelete(localTweetId);
-    handleDeleteModal(localTweetId);
+    handleDelete(tweetId);
+    handleDeleteModal(tweetId);
     setConfirmedDelete(true);
     setOpen(false);
   };
@@ -79,7 +80,8 @@ export default function MenuBarIcon({
         PaperProps={{
           style: {
             maxHeight: ITEM_HEIGHT * 4.5,
-            width: "20ch",
+            backgroundColor: "#FFFFFF",
+            width: "14ch",
           },
         }}>
         {options.map((option) => (

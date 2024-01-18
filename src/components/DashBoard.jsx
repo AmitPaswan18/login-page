@@ -1,6 +1,5 @@
 import {
   Button,
-  InputLabel,
   Grid,
   Box,
   CssBaseline,
@@ -9,30 +8,30 @@ import {
   Container,
 } from "@mui/material";
 
+import Modal from "@mui/material/Modal";
+
+import { getTweet, tweetPage } from "../redux/Slices/tweetSlice";
+import { useDispatch } from "react-redux";
+
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 import { TextareaAutosize as BaseTextareaAutosize } from "@mui/base/TextareaAutosize";
 import { styled } from "@mui/system";
 import { useState } from "react";
 import { instance } from "../utils/axiosInstance";
-import GetTweet from "./GetTweet";
 import InputFileUpload from "./Common/FileUpload";
 
 const defaultTheme = createTheme();
 
 export default function DashBoard() {
-  const [showTweet, setShowTweet] = useState(false);
-
   const [formData, setFormData] = useState({
     text: "",
     tweetImage: "",
   });
 
-  const handleClickShowAddTweet = () => setShowTweet((show) => !show);
+  const [previewImage, setPreviewImage] = useState(null);
 
-  const handleMouseDown = (event) => {
-    event.preventDefault();
-  };
+  const dispatch = useDispatch();
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -42,8 +41,16 @@ export default function DashBoard() {
   };
 
   const handleFileChange = (event) => {
+    const previewImage = document.getElementById("preview-image");
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPreviewImage(reader.result);
+    };
     const file = event.target.files[0];
-    console.log(file);
+    previewImage.src = URL.createObjectURL(file);
+    previewImage.onload = function () {
+      URL.revokeObjectURL(previewImage.src);
+    };
   };
 
   const handleSubmit = async (event) => {
@@ -58,19 +65,50 @@ export default function DashBoard() {
     if (fileInput) {
       const file = fileInput.files[0];
       data.append("tweetImage", file);
-      console.log(file);
     }
 
     instance
       .post("/tweet/createtweet", data)
       .then((response) => {
-        console.log(response);
+        if (response.data.status === "success") {
+          gethandleUpdateData();
+        }
         setFormData({ text: "", tweetImage: "" });
-        setShowTweet(false);
+        setOpen(false);
       })
       .catch((errr) => {
         console.log(errr);
       });
+  };
+
+  const gethandleUpdateData = () => {
+    instance
+      .get(`/tweet/gettweet?page=${1}&limit=${2}`)
+      .then((response) => {
+        dispatch(getTweet(response.data.data));
+        dispatch(tweetPage(response.data.totalDocument));
+      })
+      .catch((error) => {
+        console.log("Failed to get the tweet", error.message);
+      });
+  };
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    fontFamily: "Poppins",
+    bgcolor: "background.paper",
+    boxShadow: 24,
+  };
+
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
   };
 
   const Textarea = styled(BaseTextareaAutosize)(
@@ -133,44 +171,50 @@ export default function DashBoard() {
   };
 
   return (
-    <div className="bg-[#E5E7EB] h-[100vh] max-w-full relative">
-      <div className="flex">
-        <div className="flex h-fit md:h-full md:flex-row md:w-full  mt-2 gap-2 px-5">
-          <div className="flex md:h-10 h-fit md:flex-row justify-evenly gap-2 ">
-            <Button
-              sx={{
-                "@media (max-width: 740px)": {
-                  fontSize: "8px",
-                },
-              }}
-              onClick={handleClickShowAddTweet}
-              onMouseDown={handleMouseDown}
-              variant="contained">
-              Add Tweet
-            </Button>
+    <>
+      <div className="max-w-full relative">
+        <div className="flex">
+          <div className="flex h-fit md:h-full md:flex-row md:w-full mt-2 gap-2 px-5">
+            <div className="flex md:h-10 h-fit md:flex-row justify-evenly gap-2 ">
+              <Button
+                sx={{
+                  "@media (max-width: 740px)": {
+                    fontSize: "8px",
+                  },
+                }}
+                onClick={() => handleOpen()}
+                variant="contained">
+                Add Tweet
+              </Button>
+            </div>
           </div>
         </div>
+        <Typography
+          sx={{
+            display: "flex",
+            height: "fit",
+            justifyContent: "center",
+            fontFamily: "Poppins",
+            marginTop: "5px",
+            fontSize: "26px",
+            lineHeight: "1",
+            "@media (max-width: 740px)": {
+              fontSize: "16px",
+            },
+          }}
+          variant="h6"
+          component="div">
+          Recent Tweets
+        </Typography>
       </div>
-      <Typography
-        sx={{
-          display: "flex",
-          height: "fit",
-          justifyContent: "center",
-          fontFamily: "Poppins",
-          marginTop: "5px",
-          fontSize: "26px",
-          lineHeight: "1",
-          "@media (max-width: 740px)": {
-            fontSize: "16px",
-          },
-        }}
-        variant="h6"
-        component="div">
-        Recent Tweets
-      </Typography>
-
-      {showTweet ? (
-        <div className="md:w-[100%] w-full h-[86vh] flex justify-center items-center">
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description">
+        <div
+          style={style}
+          className="md:w-[100%] w-full h-[86vh] flex justify-center items-center">
           <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="xs">
               <CssBaseline />
@@ -181,19 +225,6 @@ export default function DashBoard() {
                   noValidate
                   sx={{ mt: 1, width: "80%" }}>
                   <div className="mt-3">
-                    <InputLabel className="text-[#CBCBCB]" htmlFor="text">
-                      <Typography
-                        sx={{
-                          display: "flex",
-                          fontFamily: "Poppins",
-                          fontSize: "20px",
-                          lineHeight: "1",
-                        }}
-                        component="h1"
-                        variant="h6">
-                        Tweet
-                      </Typography>
-                    </InputLabel>
                     <FormControl variant="standard" sx={{ width: "100%" }}>
                       <Textarea
                         id="text"
@@ -205,7 +236,7 @@ export default function DashBoard() {
                         placeholder="What is happening!?"
                         sx={{ marginTop: 1, width: "100%" }}
                       />
-                      <div className="flex justify-center mt-2 w-full">
+                      <div className="flex  rounded-md justify-center mt-2 w-full ">
                         <InputFileUpload
                           id="tweetImage"
                           onChange={handleFileChange}
@@ -222,6 +253,15 @@ export default function DashBoard() {
                     sx={{ mt: 3, mb: 2, width: "100%" }}>
                     Post
                   </Button>
+
+                  <div className="h-auto rounded-md overflow-hidden">
+                    <img
+                      className="h-34 overflow-hidden relative object-cover"
+                      id="preview-image"
+                      src="#"
+                      alt=""
+                    />
+                  </div>
                   <Grid
                     container
                     justifyContent="center"
@@ -231,9 +271,7 @@ export default function DashBoard() {
             </Container>
           </ThemeProvider>
         </div>
-      ) : (
-        <GetTweet />
-      )}
-    </div>
+      </Modal>
+    </>
   );
 }
