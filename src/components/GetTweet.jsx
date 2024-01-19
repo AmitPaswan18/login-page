@@ -158,24 +158,24 @@ export default function GetTweet() {
             <div key={ele._id} className=" w-full  flex justify-center">
               <>
                 <div className=" md:w-[80%]  hover:scale-[101%] ease-out duration-300 lg:max-w-[60%] bg-slate-50 w-full max-h-fit border-2 shadow-2xl shadow-slate-500 rounded-md relative">
-                  <div className="md:w-fit w-full flex-col flex md:flex-row">
+                  <div className="md:w-full w-full flex-col flex md:flex-row">
                     {ele.tweetImage != undefined && (
                       <div className="m-1  rounded-md overflow-hidden">
                         <img
-                          className="h-auto rounded-md max-w-xs"
+                          className="max-h-44 rounded-md max-w-xs"
                           src={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
                           alt=""
                         />
                       </div>
                     )}
 
-                    <div className="p-2 text-xs opacity-95 flex-wrap  text-gray-900 dark:text-white flex justify-between w-fit max-h-fit">
-                      <div className="flex flex-col justify-between">
-                        <div className="w-[90%] text-base text-black">{`${ele.text}`}</div>
+                    <div className="p-2 text-xs opacity-95 flex-wrap max-w-sm md:w-full  text-gray-900 dark:text-white flex justify-between w-fit max-h-fit">
+                      <div className="flex w-full flex-col text-wrap justify-between">
+                        <div className="w-[90%] md:w-full max-h-44 md:h-30 overflow-auto text-sm md:text-base text-black">{`${ele.text}`}</div>
                         <div>
                           <Typography>
                             <span className="text-sm opacity-80">
-                              <span className="text-sm">
+                              <span className="text-sm mt-1">
                                 {moment(ele.dateAndTime).format(format1)}
                               </span>
                             </span>
@@ -226,12 +226,7 @@ export default function GetTweet() {
         <Box className="rounded-md shadow-lg shadow-white" sx={style}>
           <div className="relative border-2 rounded-md shadow-md shadow-slate-400 p-4 w-full max-w-md max-h-full">
             <div className="relative bg-white  dark:bg-gray-700">
-              <div className="flex items-center justify-between pb-5 md:p-5 border-b rounded-t dark:border-gray-600">
-                <h3 className="text-wrap font-medium text-lg  text-gray-900 dark:text-white">
-                  Update your Tweet Below
-                </h3>
-              </div>
-
+              <div className="flex items-center justify-between pb-5  rounded-t dark:border-gray-600"></div>
               <>
                 <div className="grid gap-4 mb-4 grid-cols-2">
                   <div className="col-span-2">
@@ -248,8 +243,8 @@ export default function GetTweet() {
                       }}>
                       <label
                         htmlFor="edit-text"
-                        className="block mb-2 p-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Enter a new tweet
+                        className="block mb-2 p-2 text-sm md:text-2xl font-medium text-gray-900 dark:text-white border-b dark:border-gray-600">
+                        Update Tweet
                       </label>
                       <textarea
                         style={{ resize: "none" }}
