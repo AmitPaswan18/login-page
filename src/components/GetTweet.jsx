@@ -155,10 +155,10 @@ export default function GetTweet() {
         </div>
         {tweetData.length > 0 ? (
           tweetData.map((ele) => (
-            <div key={ele._id} className=" w-[100%]  flex justify-center">
+            <div key={ele._id} className=" w-full  flex justify-center">
               <>
-                <div className="md:w-[80%] hover:scale-[101%] ease-out duration-300 lg:max-w-[60%] bg-slate-50 w-full max-h-fit border-2 shadow-2xl shadow-slate-500 rounded-md relative">
-                  <div className="md:w-full w-full flex-col flex md:flex-row">
+                <div className=" md:w-[80%]  hover:scale-[101%] ease-out duration-300 lg:max-w-[60%] bg-slate-50 w-full max-h-fit border-2 shadow-2xl shadow-slate-500 rounded-md relative">
+                  <div className="md:w-fit w-full flex-col flex md:flex-row">
                     {ele.tweetImage != undefined && (
                       <div className="m-1  rounded-md overflow-hidden">
                         <img
@@ -169,7 +169,7 @@ export default function GetTweet() {
                       </div>
                     )}
 
-                    <div className="p-2 text-xs opacity-95 text-gray-900 dark:text-white flex justify-between w-fit max-h-fit">
+                    <div className="p-2 text-xs opacity-95 flex-wrap  text-gray-900 dark:text-white flex justify-between w-fit max-h-fit">
                       <div className="flex flex-col justify-between">
                         <div className="w-[90%] text-base text-black">{`${ele.text}`}</div>
                         <div>
