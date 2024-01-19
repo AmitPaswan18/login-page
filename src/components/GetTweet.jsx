@@ -32,10 +32,13 @@ import {
 } from "../redux/Slices/tweetSlice";
 import MenuBarIcon from "./Common/MenuBarIcon";
 
+import Skeleton from "@mui/material/Skeleton";
+
 export default function GetTweet() {
   const dispatch = useDispatch();
 
   const tweetData = useSelector((state) => state.tweet.tweet);
+  const isLoading = useSelector((state) => state.tweet.loading);
 
   const tweetPageCount = useSelector((state) => state.tweet.totalTweets);
 
@@ -198,23 +201,33 @@ export default function GetTweet() {
             </div>
           ))
         ) : (
-          <Typography
-            sx={{
-              mt: 2,
-              mb: 2,
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-              fontFamily: "Poppins",
-              color: "blue",
-              fontSize: "20px",
-              lineHeight: "1",
-              "@media (max-width: 600px)": { fontSize: "12px", mt: 1, mb: 1 },
-            }}
-            variant="h6"
-            component="div">
-            {` No tweets Available`}
-          </Typography>
+          <>
+            <Typography
+              sx={{
+                mt: 2,
+                mb: 2,
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                fontFamily: "Poppins",
+                color: "black",
+                fontSize: "20px",
+                lineHeight: "1",
+                "@media (max-width: 600px)": { fontSize: "12px", mt: 1, mb: 1 },
+              }}
+              variant="h6"
+              component="div">
+              {` No tweets Available`}
+            </Typography>
+            {isLoading && (
+              <div className="flex justify-center w-[100%]">
+                <Box sx={{ width: "50% ", height: "20%" }}>
+                  <Skeleton sx={{ height: "100px" }} animation="wave" />
+                  <Skeleton sx={{ height: "100px" }} animation="wave" />
+                </Box>
+              </div>
+            )}
+          </>
         )}
       </div>
       <Modal
