@@ -155,31 +155,30 @@ export default function GetTweet() {
         </div>
         {tweetData.length > 0 ? (
           tweetData.map((ele) => (
-            <div key={ele._id} className=" w-full  flex justify-center">
+            <div key={ele._id} className=" w-full flex justify-center">
               <>
-                <div className=" md:w-[80%]  hover:scale-[101%] ease-out duration-300 lg:max-w-[60%] bg-slate-50 w-full max-h-fit border-2 shadow-2xl shadow-slate-500 rounded-md relative">
-                  <div className="md:w-full w-full flex-col flex md:flex-row">
-                    {ele.tweetImage != undefined && (
-                      <div className="m-1  rounded-md overflow-hidden">
+                <div className=" md:w-[80%] sd:w-{90%] hover:scale-[101%] ease-out duration-300 lg:max-w-[60%] bg-slate-50 w-full max-h-fit border-2 shadow-lg shadow-slate-500 rounded-md relative">
+                  <div className="md:w-full w-full flex-col sd:flex-row h-fit flex md:flex-row">
+                    {ele.tweetImage != "undefined" && (
+                      <div className="m-1 h-fit max-w-sm  rounded-md overflow-hidden">
                         <img
-                          className="max-h-44 rounded-md max-w-xs"
+                          style={{
+                            display: "inline-block",
+                            verticalAlign: "middle",
+                          }}
+                          className="rounded-md md:h-44 aspect-video md:w-[320px] w-[270px] object-cover"
                           src={`http://116.202.210.102:3339/images/${ele.tweetImage}`}
-                          alt=""
+                          alt="No Image in this tweet"
                         />
                       </div>
                     )}
-
-                    <div className="p-2 text-xs opacity-95 flex-wrap max-w-sm md:w-full  text-gray-900 dark:text-white flex justify-between w-fit max-h-fit">
+                    <div className="p-2 text-xs opacity-95 flex-wrap max-w-sm md:w-full  text-gray-900 dark:text-white flex justify-between w-full ">
                       <div className="flex w-full flex-col text-wrap justify-between">
-                        <div className="w-[90%] md:w-full max-h-44 md:h-30 overflow-auto text-sm md:text-base text-black">{`${ele.text}`}</div>
-                        <div>
-                          <Typography>
-                            <span className="text-sm opacity-80">
-                              <span className="text-sm mt-1">
-                                {moment(ele.dateAndTime).format(format1)}
-                              </span>
-                            </span>
-                          </Typography>
+                        <div className="w-[90%] md:w-full max-h-44 md:h-30 md:overflow-auto text-xs opacity-90 md:text-base text-black">{`${ele.text}`}</div>
+                        <div className="mt-2">
+                          <span className="text-xs mt-10 opacity-80">
+                            {moment(ele.dateAndTime).format(format1)}
+                          </span>
                         </div>
                       </div>
                     </div>
