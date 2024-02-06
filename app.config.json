@@ -1,0 +1,9 @@
+{
+  "apps" : [
+    {
+      "name": "tweet-app",
+      "script": "npm run dev --host",
+      "interpreter": "none"
+    }
+  ]
+}
